@@ -1,0 +1,81 @@
+.movie-screen {
+    display: flex;
+    padding: 20px;
+    background-color: #1b1b1b;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    flex-direction: row;
+    height: 100%;
+    align-items: center;
+  }
+  
+  .movie-detail-poster {
+    width: 300px;
+    flex-shrink: 0;
+  }
+  
+  .movie-detail-poster img {
+    width: 100%;
+    border-radius: 10px;
+  }
+  
+  .movie-details {
+    margin-left: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .movie-details h1 {
+    font-size: 36px;
+    margin: 0;
+  }
+  
+  .movie-details h1 span {
+    font-weight: 400;
+    font-size: 24px;
+    color: #ccc;
+  }
+  
+  .movie-meta {
+    margin-top: 0px;
+    font-size: 16px;
+    color: #aaa;
+  }
+  
+  .user-score {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+  }
+  
+  .score-circle {
+    /* width: 70px; */
+    height: 50px;
+    border-radius: 12%;
+    background-color: #1c8d2f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .movie-overview h3 {
+    font-size: 30px;
+    margin-bottom: 0px;
+  }
+  
+  .movie-overview p {
+    line-height: 1;
+    font-size: 18px;
+    color: white;
+  }
+  
+  .movie-credits p {
+    margin: 5px 0;
+  }
+  
