@@ -1,12 +1,13 @@
 .movie-screen {
     display: flex;
-    padding: 20px;
+    padding: 40px;
     background-color: #1b1b1b;
     color: white;
     font-family: 'Arial', sans-serif;
     flex-direction: row;
     height: 100%;
     align-items: center;
+    padding-left: 50px;
   }
   
   .movie-detail-poster {

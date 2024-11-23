@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import "../App.css"; // You can use custom CSS to center the form
-import { signup } from "../fetch/agent";
+import { signup, signin } from "../fetch/agent";
 import { notification, Button } from "antd";
+import { useUser } from "../ContextApi/UserContext";
 
 function SignupForm(props) {
-
+  const { user, setUser } = useUser();
+  const [isSignIn, setIsSignIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
@@ -24,7 +26,7 @@ function SignupForm(props) {
   const validateForm = () => {
     let formErrors = {};
 
-    if (!formData.username) {
+    if (!isSignIn && !formData.username) {
       formErrors.username = "Username is required.";
     }
     if (!formData.email) {
@@ -37,12 +39,12 @@ function SignupForm(props) {
     } else if (formData.password.length < 6) {
       formErrors.password = "Password must be at least 6 characters long.";
     }
-    if (!formData.repassword) {
+    if (!isSignIn && !formData.repassword) {
       formErrors.repassword = "Please re-enter the password.";
-    } else if (formData.repassword !== formData.password) {
+    } else if (!isSignIn && formData.repassword !== formData.password) {
       formErrors.repassword = "Passwords do not match.";
     }
-    if (!formData.phone) {
+    if (!isSignIn && !formData.phone) {
       formErrors.phone = "Phone number is required.";
     }
 
@@ -65,15 +67,22 @@ function SignupForm(props) {
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await signup(formData);
+        let response;
+        if(isSignIn){
+          response = await signin({email : formData.email, password : formData.password});
+        }else{
+          response = await signup(formData);
+        }
+         
         if (response?.status) {
-          alert(response?.status);
+          setUser(response?.userDetail);
         } else {
-          alert(response?.status);
+          alert(JSON.stringify(response));
         }
         console.log(response.data); // Handle success message
       } catch (error) {
-        console.error("Signup error:", error);
+        // alert(1)
+        console.error("Signup error:");
         notification.error({
           message: "Signup Failed",
           description:
@@ -87,7 +96,7 @@ function SignupForm(props) {
 
   return (
     <div className="signup-container">
-      <form className="signup-form" onSubmit={handleSubmit}>
+      <form className="signup-form">
         <div
           style={{
             display: "flex",
@@ -97,22 +106,26 @@ function SignupForm(props) {
             marginBottom: 20,
           }}
         >
-          <text style={{ fontSize: 35, fontWeight: "bold" }}>Sign Up</text>
+          <text style={{ fontSize: 35, fontWeight: "bold" }}>
+            {!!isSignIn ? "Sign In" : "Sign Up"}
+          </text>
         </div>
 
-        <div className="form-group-signup">
-          <label>Username:</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleInputChange}
-            className={errors.username ? "error-input" : ""}
-          />
-          {errors.username && (
-            <small className="error-msg">{errors.username}</small>
-          )}
-        </div>
+        {!isSignIn && (
+          <div className="form-group-signup">
+            <label>Username:</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleInputChange}
+              className={errors.username ? "error-input" : ""}
+            />
+            {errors.username && (
+              <small className="error-msg">{errors.username}</small>
+            )}
+          </div>
+        )}
 
         <div className="form-group-signup">
           <label>Email:</label>
@@ -141,45 +154,50 @@ function SignupForm(props) {
           )}
         </div>
 
-        <div className="form-group-signup">
-          <label>Re-enter Password:</label>
-          <input
-            type="password"
-            name="repassword"
-            placeholder="Password must be at least 6 characters long"
-            value={formData.repassword}
-            onChange={handleInputChange}
-            className={errors.repassword ? "error-input" : ""}
-          />
-          {errors.repassword && (
-            <small className="error-msg">{errors.repassword}</small>
-          )}
-        </div>
+        {!isSignIn && (
+          <div className="form-group-signup">
+            <label>Re-enter Password:</label>
+            <input
+              type="password"
+              name="repassword"
+              placeholder="Password must be at least 6 characters long"
+              value={formData.repassword}
+              onChange={handleInputChange}
+              className={errors.repassword ? "error-input" : ""}
+            />
+            {errors.repassword && (
+              <small className="error-msg">{errors.repassword}</small>
+            )}
+          </div>
+        )}
 
-        <div className="form-group-signup">
-          <label>Phone:</label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-            className={errors.phone ? "error-input" : ""}
-          />
-          {errors.phone && <small className="error-msg">{errors.phone}</small>}
-        </div>
+        {!isSignIn && (
+          <div className="form-group-signup">
+            <label>Phone:</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className={errors.phone ? "error-input" : ""}
+            />
+            {errors.phone && (
+              <small className="error-msg">{errors.phone}</small>
+            )}
+          </div>
+        )}
 
         {/* <button type="submit" className="submit-btn">
           Submit
         </button> */}
 
-        <div style={{ display: "flex", flexDirection: "row", width:'100%' }}>
-          
+        <div style={{ display: "flex", flexDirection: "row", width: "100%" }}>
           <Button
             className="submit-btn"
             loading={isLoading}
             disabled={isLoading}
             type={"primary"}
-            style={{ fontSize: 18, fontWeight: "bold", width:'70%'}}
+            style={{ fontSize: 18, fontWeight: "bold", width: "70%" }}
             onClick={handleSubmit}
           >
             Submit
@@ -188,11 +206,47 @@ function SignupForm(props) {
             loading={isLoading}
             disabled={isLoading}
             // type={"ghost"}
-            style={{ fontSize: 18, fontWeight: "bold", width:'29%', marginLeft:5}}
-            onClick={()=>props.setShowSignUp?.(false)}
+            style={{
+              fontSize: 18,
+              fontWeight: "bold",
+              width: "29%",
+              marginLeft: 5,
+            }}
+            onClick={() => props.setShowSignUp?.(false)}
           >
             Cancel
           </Button>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "center",
+            width: "100%",
+            color: "black",
+            cursor: "pointer",
+            marginTop: 5,
+            fontWeight: "bold",
+          }}
+          onClick={() => setIsSignIn(!isSignIn)}
+        >
+          <text>
+            Or{" "}
+            {
+              <a
+                style={{
+                  cursor: "pointer",
+                  fontSize: 16,
+                  borderBottom: "1px solid",
+                }}
+              >
+                {!isSignIn ? "Sign In" : "Sign Up"}
+              </a>
+            }{" "}
+            {!isSignIn && "manually"}?
+          </text>
         </div>
       </form>
     </div>

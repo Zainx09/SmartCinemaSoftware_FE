@@ -2,12 +2,19 @@ import React, { useState } from "react";
 import ExploreScreen from "./ExploreScreen";
 import MoviesGridView from "../components/MoviesGridView";
 import SignupView from "../components/SignupView";
+import UserDetailView from "../components/UserDetailView";
+import { useUser } from "../ContextApi/UserContext";
+import AllMoviesView from "../components/AllMoviesView";
+import SignupForm from "../components/SignupForm";
 
 import "../App.css";
 
 const bgImg = "../../public/background.png";
 
 function HomeScreen() {
+  const { user, setUser } = useUser();
+  // const user = {"email":"zain@gmail.com","id":"671851c4fcc86bd7fdca568f","phone":"03132525514","username":"zain"}
+
   const [recognitionResult, setRecognitionResult] = useState(null);
 
   const backgroundStyle = {
@@ -50,52 +57,55 @@ function HomeScreen() {
 
   return (
     <div className="background">
-      {/* <div> */}
-      {/* <ExploreScreen /> */}
-      {/* <h1>Face Detection and Recognition</h1>
-        <button onClick={handleDetect}>Detect</button>
-        <button onClick={handleRecognize}>Recognize</button>
-        {recognitionResult && <p>{recognitionResult}</p>} */}
-
       <div
         style={{
           flex: 1,
           display: "flex",
           flexDirection: "row",
-          height: "100vh",
+          height: "100%",
           width: "100%",
           overflow: "hidden",
+          paddingTop: 60,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            height: "100%",
-            width: "80%",
-          }}
-        >
-          <MoviesGridView />
-        </div>
+        {!user ? (
+          <>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                height: "95vh",
+                width: "80%",
+                overflowY:'hidden'
+                // paddingTop:60
+              }}
+            >
+              <MoviesGridView />
+            </div>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            height: "100%",
-            width: "20%",
-            backgroundColor: "white",
-            opacity: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            overflow:'hidden',
-            border:'3px solid'
-          }}
-        >
-          <SignupView />
-        </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                height: "102%",
+                width: "20%",
+                backgroundColor: "white",
+                opacity: 1,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                overflow: "hidden",
+                border: "0px solid",
+                marginTop: -15,
+              }}
+            >
+              {<SignupView />}
+            </div>
+          </>
+        ) : (
+          <AllMoviesView user={user}/>
+        )}
       </div>
     </div>
   );

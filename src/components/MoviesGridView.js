@@ -1,33 +1,45 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import "../styleFiles/moviesGridViewStyle.css"; // Include some styling for the grid view
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
+import { useUser } from "../ContextApi/UserContext";
+import ImgCard from "../widgets/ImgCard";
+import { getNowPlaying, getFavMovies } from "../fetch/agent";
 
-const MoviesGridView = () => {
+const MoviesGridView = ({ isFavView, title }) => {
+  const { user, setUser } = useUser();
   const navigate = useNavigate();
 
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch movies from Flask API when the component mounts
-    axios
-      .get("http://localhost:5000/get_nowPlaying_movies")
-      .then((response) => {
-        // const data = JSON.parse(response.data);
-        const data = response.data;
 
-        if (data.status === "success") {
-          setMovies(data.movies);
-        } else {
-          console.error("Error fetching movies:", data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("There was an error!", error);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const scrollableDivRef = useRef(null);
+
+  // Scroll to the top of the div
+  const scrollToTop = () => {
+    if (scrollableDivRef.current) {
+      scrollableDivRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth", // Smooth scrolling
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isFavView && user?.id) {
+      getFavMovies(user.id)
+        .then((response) => setMovies(response?.data || []))
+        .catch((error) => console.error(error))
+        .finally(() => setLoading(false));
+    } else {
+      // Fetch movies from Flask API when the component mounts
+      getNowPlaying()
+        .then((response) => setMovies(response?.data || []))
+        .catch((error) => console.error(error))
+        .finally(() => setLoading(false));
+    }
+  }, [user?.id]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -36,6 +48,7 @@ const MoviesGridView = () => {
   return (
     // <div className="container">
     <div
+      ref={scrollableDivRef}
       style={{
         flex: 1,
         display: "flex",
@@ -44,40 +57,48 @@ const MoviesGridView = () => {
         width: "100%",
         // border: "3px solid yellow",
         overflowY: "scroll",
+        padding: "0px 40px",
       }}
     >
-      <h1 className="heading">Now Playing</h1>
+      
+        <button
+          onClick={scrollToTop}
+          style={{
+            position: "fixed",
+            bottom: "50px",
+            right: '26%',
+            backgroundColor: "#40a9ff",
+            color: "#fff",
+            borderRadius: "10px",
+            width: "60px",
+            height: "60px",
+            fontSize: "25px",
+            cursor: "pointer",
+            // boxShadow: "0px 0px 6px white",
+            zIndex: 1000,
+            border:'none'
+          }}
+        >
+          ↑
+        </button>
+       
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          width: "95%",
+          justifyContent: "flex-start",
+          borderBottom: "1px solid white",
+          paddingBottom: 15,
+          marginBottom: 10,
+        }}
+      >
+        <h1 className="heading">{title || "Now Playing"}</h1>
+      </div>
+      {/* <text style={{ color: "white" }}>{JSON.stringify(user)}</text> */}
       <div className="movie-grid">
         {movies.map((movie, index) => (
-          <div key={index} className="movie-card" onClick={()=>navigate(`/${movie.id}`)}>
-            <img
-              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-              alt={movie.title}
-              className="movie-poster-grid"
-            />
-            {/* <h3>{movie.title}</h3>
-
-            <p className={`movie-overview`}>
-              {movie.overview}
-            </p>
-            <a 
-              style={{border:'0px solid', fontSize:12}}
-              href={()=>navigate(`/${movie.id}`)}
-              // onClick={toggleReadMore}
-              >
-              Read More
-            </a>
-
-            <p>
-              <strong>Genres:</strong> {movie.genres.join(", ")}
-            </p>
-            <p>
-              <strong>Rating:</strong> {movie.vote_average} / 10
-            </p>
-            <p>
-              <strong>Duration:</strong> {movie.runtime} min
-            </p> */}
-          </div>
+          <ImgCard movie={movie} />
         ))}
       </div>
     </div>

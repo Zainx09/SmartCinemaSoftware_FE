@@ -1,17 +1,31 @@
 import React, { useLayoutEffect, useState } from "react";
 import moment from "moment";
 import { useParams } from "react-router-dom";
-import { getMovieDetails, getMovieRecommendations } from "../fetch/agent";
+import {
+  getMovieDetails,
+  getMovieRecommendations,
+  getFavMovies,
+  updateFavoriteMovie
+} from "../fetch/agent";
 import MovieSlider from "../components/MovieSliderView";
+import MovieCarouselView from "../components/MovieCarouselView";
+import { FaHome, FaRegHeart, FaHeart, FaTicketAlt } from "react-icons/fa";
 import "../styleFiles/movieScreenViewStyle.css";
+import { Button } from "antd";
+import TicketBooking from "../components/TicketBookingView";
+import { useUser } from "../ContextApi/UserContext";
 
 // Define the cutoff date as 01-09-2024
 const cutoffDate = new Date("2024-09-01");
 
 function MovieDetailView() {
   const { movieID } = useParams();
+  const { user, setUser } = useUser();
+  const [isBuyTicket, setIsBuyTicket] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [movie, setMovie] = useState();
+  const [favMovies, setFavMovies] = useState();
+  const [isFavMovie, setIsFavMovie] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
 
   const fetchMovie = async () => {
@@ -24,6 +38,26 @@ function MovieDetailView() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchFav = () => {
+    // Fetch movie details
+    getFavMovies(user.id)
+      .then((response) => {
+        let favMovies = response.data;
+        if (favMovies && movieID) {
+          let found = favMovies?.find((movie) => movie.id == movieID);
+          if (found) {
+            setIsFavMovie(true);
+          } else {
+            setIsFavMovie(false);
+          }
+        }
+      })
+      .catch((error) => console.error(error))
+      .finally(() => {
+        // setIsLoading(false);
+      });
   };
 
   const fetchRecommendations = async () => {
@@ -46,11 +80,36 @@ function MovieDetailView() {
     }
   };
 
+  const updateFavMovie = (remove = false) => {
+    // Fetch movie details
+    updateFavoriteMovie(user.id, movieID, remove)
+      .then((response) => {
+        setIsFavMovie(!isFavMovie)
+        // let favMovies = response.data;
+        // if (favMovies && movieID) {
+        //   let found = favMovies?.find((movie) => movie.id == movieID);
+        //   if (found) {
+        //     setIsFavMovie(true);
+        //   } else {
+        //     setIsFavMovie(false);
+        //   }
+        // }
+      })
+      .catch((error) => console.error(error))
+      .finally(() => {
+        // setIsLoading(false);
+      });
+  };
   // You can fetch movie details based on the movieID here, for example, using useEffect
 
   useLayoutEffect(() => {
     try {
+      setIsBuyTicket(false);
       setIsLoading(true);
+
+      if (user?.id && movieID) {
+        fetchFav();
+      }
       if (movieID) {
         fetchMovie();
       }
@@ -68,7 +127,7 @@ function MovieDetailView() {
   }
 
   return (
-    <div>
+    <div style={{ paddingTop: 50, border: "0px solid red" }}>
       <div className="movie-screen">
         <div className="movie-detail-poster">
           <img
@@ -105,23 +164,101 @@ function MovieDetailView() {
         <div className="movie-details">
           <h1 style={{ fontSize: 50 }}>
             {movie?.title}{" "}
-            <span>({new Date(movie.release_date).getFullYear()})</span>
+            <span style={{ fontSize: 20 }}>
+              ({new Date(movie.release_date).getFullYear()})
+            </span>
           </h1>
           <div className="movie-meta">
-            <span style={{ fontSize: 25 }}>{movie.release_date}</span>
-            <span style={{ fontSize: 25 }}> • {genreNames}</span>
-            <span style={{ fontSize: 25 }}> • {movie.runtime + "m"}</span>
+            <span style={{ fontSize: 20 }}>{movie.release_date}</span>
+            <span style={{ fontSize: 20 }}> • {genreNames}</span>
+            <span style={{ fontSize: 20 }}> • {movie.runtime + "m"}</span>
           </div>
           <div className="user-score">
-            <div className="score-circle">{movie.vote_average}/10</div>
+            <div className="score-circle">
+              {movie.vote_average?.toFixed(1)} / 10
+            </div>
           </div>
-          <div className="movie-overview">
-            <h3>Overview</h3>
-            <p>{movie.overview}</p>
+          <div>
+            <h3 style={{ color: "darkgray", fontSize: 24 }}>Overview</h3>
+            <p
+              style={{
+                width: "90%", // or set to a specific width like '200px'
+                wordWrap: "break-word", // Wrap long words to the next line
+                overflowWrap: "break-word", // Ensures compatibility for wrapping
+                border: "0px solid red",
+                fontSize: 18,
+                fontWeight: "bold",
+                color: "white",
+                marginLeft: 0,
+                textAlign: "justify",
+                // paddingRight:100
+                // maxWidth:400
+              }}
+            >
+              {movie.overview}
+            </p>
+
+            <div
+              style={{ display: "flex", flexDirection: "row", marginTop: 60 }}
+            >
+              <Button
+                style={{
+                  fontSize: 20,
+                  fontWeight: "bold",
+                  color: "black",
+                  backgroundColor: "#d9aa1d",
+                  borderWidth: 0,
+                  height: 50,
+                }}
+                onClick={()=>{
+                  if(isFavMovie){
+                    updateFavMovie(true)
+                  }else{
+                    updateFavMovie(false)
+                  }
+                }}
+              >
+                {!!isFavMovie ? (
+                  <FaHeart style={{ color: "red" }} />
+                ) : (
+                  <FaRegHeart />
+                )}
+                {isFavMovie ? "Remove from " : "Add to "} Favourite
+              </Button>
+              <Button
+                style={{
+                  fontSize: 20,
+                  fontWeight: "bold",
+                  color: "white",
+                  backgroundColor: "#118378",
+                  borderWidth: 0,
+                  height: 50,
+                  marginLeft: 20,
+                }}
+                onClick={() => {
+                  setIsBuyTicket(true);
+                  window.scrollBy({ top: 480, behavior: "smooth" });
+                }}
+              >
+                <FaTicketAlt />
+                Buy Ticket
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-      <MovieSlider movies={recommendations} />
+      {/* <MovieSlider movies={recommendations} /> */}
+
+      {!!isBuyTicket && <TicketBooking movieID={movieID} />}
+
+      <div style={{ width: "100%", paddingBottom: 30, marginTop: 50 }}>
+        <MovieCarouselView
+          title="Recommendations"
+          movies={recommendations}
+          titleStyle={{ color: "black" }}
+          ratingStyle={{ color: "black" }}
+        />
+      </div>
     </div>
   );
 }
