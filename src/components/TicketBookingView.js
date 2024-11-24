@@ -28,6 +28,13 @@ const TicketBooking = ({ movieID }) => {
   useEffect(() => {
     const fetchShowDetails = async () => {
       try {
+        if(!user){
+          notification.error({
+            message: "Can't Book Tickets!",
+            description:"Please Login to Book your Tickets",
+          });
+          return
+        }
         setIsLoading(true);
         // const response = await getShowsDetails(movieID)
         // alert(JSON.stringify(response))
@@ -58,8 +65,18 @@ const TicketBooking = ({ movieID }) => {
 
   // Function to handle show selection
   const onShowSelect = (show) => {
+    if(!user){
+      notification.error({
+        message: "Can't Book Tickets!",
+        description:"Please Login to Book your Tickets",
+      });
+      return
+    }
     setSelectedShow(show);
     setSelectedSeats([]);
+    setTimeout(() => {
+      window.scrollBy({ top: 500, behavior: "smooth" });
+    }, 200);
   };
 
   // Handle seat selection toggle
@@ -73,7 +90,20 @@ const TicketBooking = ({ movieID }) => {
 
   // Confirm order
   const confirmOrder = async () => {
+    // alert(JSON.stringify(selectedSeats));
+    // return
     try {
+      if(movieID && selectedShow){
+        await bookSeats(
+          {
+            id : movieID,
+            show_datetime : selectedShow.datetime,
+            booked_seats: selectedSeats
+          }
+        );
+        setIsModalVisible(true);
+      }
+      
       // alert(
       //   JSON.stringify({
       //     movie_id: movieID,
@@ -93,7 +123,7 @@ const TicketBooking = ({ movieID }) => {
       //   description:
       //     "Successfully processed your order. Please collect your receipt.",
       // });
-      setIsModalVisible(true);
+      
     } catch (error) {
       notification.error({
         message: "Booking Failed",
@@ -274,9 +304,7 @@ const TicketBooking = ({ movieID }) => {
                     key={index}
                     onClick={() => {
                       onShowSelect(show);
-                      setTimeout(() => {
-                        window.scrollBy({ top: 500, behavior: "smooth" });
-                      }, 200);
+                      
                     }}
                     disabled={show.remaining_seats === 0}
                     style={{

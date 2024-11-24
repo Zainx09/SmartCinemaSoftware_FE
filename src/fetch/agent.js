@@ -122,11 +122,11 @@ export const getShowsDetails = async (movieId) => {
 };
 
 // API to book seats for a selected show
-export const bookSeats = async ({ movie_id, show_datetime, booked_seats }) => {
+export const bookSeats = async ({ id, show_datetime, booked_seats }) => {
   try {
     // Flask endpoint call to book seats
     const response = await apiFlask.post("bookSeats", {
-      movie_id,
+      id,
       show_datetime,
       booked_seats,
     });

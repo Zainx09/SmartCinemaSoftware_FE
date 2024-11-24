@@ -75,7 +75,7 @@ function HomeScreen() {
                 display: "flex",
                 flexDirection: "row",
                 height: "95vh",
-                width: "80%",
+                width: "75%",
                 overflowY:'hidden'
                 // paddingTop:60
               }}
@@ -88,7 +88,7 @@ function HomeScreen() {
                 display: "flex",
                 flexDirection: "row",
                 height: "102%",
-                width: "20%",
+                width: "25%",
                 backgroundColor: "white",
                 opacity: 1,
                 display: "flex",

@@ -53,11 +53,11 @@ const SignupView = () => {
           flexDirection: "column",
           alignItems: "center",
           marginTop:-5,
-          marginBottom:25
+          marginBottom:40
         }}
       >
-        <strong style={{fontSize:20, fontWeight:'bold'}}>Your Next Adventure Begins Here</strong>
-        <strong style={{fontSize:20, fontWeight:'bold'}}>Start Exploring your favourite movies now</strong>
+        <strong style={{fontSize:20, fontWeight:'bold', fontStyle:'italic'}}>Your Next Adventure Begins Here</strong>
+        <strong style={{fontSize:20, fontWeight:'bold', fontStyle:'italic'}}>Start Exploring your favourite movies now</strong>
       </div>}
 
       {!!isLoading && (

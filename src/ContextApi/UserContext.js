@@ -11,7 +11,8 @@ export const useUser = () => {
 
 // UserProvider component to wrap around components that need access to user
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState({"email":"zain@gmail.com","id":"671851c4fcc86bd7fdca568f","phone":"03132525514","username":"zain"});
+  const [user, setUser] = useState();
+  // const [user, setUser] = useState({"email":"zain@gmail.com","id":"671851c4fcc86bd7fdca568f","phone":"03132525514","username":"zain"});
 
   return (
     <UserContext.Provider value={{ user, setUser }}>
